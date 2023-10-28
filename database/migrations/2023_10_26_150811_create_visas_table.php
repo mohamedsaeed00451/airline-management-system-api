@@ -17,8 +17,8 @@ return new class extends Migration {
             $table->foreignId('category_id')->index()->constrained('categories')->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('from_company_id')->index()->constrained('companies')->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('to_company_id')->index()->constrained('companies')->cascadeOnUpdate()->cascadeOnDelete();
-            $table->boolean('is_deposit')->default(0);
-            $table->boolean('is_transfer')->default(0);
+            $table->boolean('is_deposit')->default(false);
+            $table->boolean('is_transfer')->default(false);
             $table->text('notes')->nullable();
             $table->timestamps();
         });

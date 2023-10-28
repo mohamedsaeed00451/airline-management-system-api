@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\AddCompanyRequest;
+use App\Http\Requests\ReportRequest;
 use App\Http\Traits\GeneralTrait;
 use App\Models\Company;
+use App\Models\Visa;
 use Illuminate\Http\Request;
 
 class CompanyController extends Controller
@@ -80,7 +82,7 @@ class CompanyController extends Controller
         //
     }
 
-    public function reports(Request $request, $id)
+    public function reports(ReportRequest $request, $id)
     {
         $company = Company::query()->find($id);
 
@@ -88,9 +90,53 @@ class CompanyController extends Controller
             return $this->responseMessage(400, false, 'company not found');
         }
 
-        $query = Company::query()->where('id', $id)->with('sellingVisas.category', 'executionVisas.category');
+        if ($request->report_type == 'comprehensive') {
+            $selling_price = Visa::query()->where('from_company_id', $id)->orWhere('to_company_id', $id)->sum('selling_price');
+            $execution_price = Visa::query()->where('from_company_id', $id)->orWhere('to_company_id', $id)->sum('execution_price');
+        } elseif ($request->report_type == 'implement') {
+            $selling_price = Visa::query()->Where('from_company_id', $id)->sum('selling_price');
+            $execution_price = Visa::query()->Where('from_company_id', $id)->sum('execution_price');
+        } elseif ($request->report_type == 'sale') {
+            $selling_price = Visa::query()->where('to_company_id', $id)->sum('selling_price');
+            $execution_price = Visa::query()->where('to_company_id', $id)->sum('execution_price');
+        }
 
-        $data = $query->first();
+        $totalAmount = $selling_price - $execution_price;
+
+        $visas = Visa::query()->where(function ($query) use ($id, $request) {
+
+            $query->where(function ($query) use ($id, $request) {
+                if ($request->report_type == 'comprehensive') {
+                    $query->where('from_company_id', $id)->orWhere('to_company_id', $id);
+                } elseif ($request->report_type == 'implement') {
+                    $query->Where('from_company_id', $id);
+                } elseif ($request->report_type == 'sale') {
+                    $query->where('to_company_id', $id);
+                }
+            });
+
+            if ($request->category_id) {
+                $query->where('category_id', $request->category_id);
+            }
+
+            if ($request->start_date && $request->end_date) {
+                $query->whereBetween('created_at', [$request->start_date, $request->end_date]);
+            }
+
+            if ($request->is_deposit) {
+                $query->where('is_deposit', $request->is_deposit);
+            }
+
+            if ($request->is_transfer) {
+                $query->where('is_transfer', $request->is_transfer);
+            }
+
+        })->with('category', 'fromCompany', 'toCompany')->paginate(PAGINATION_NUMBER);
+
+        $data = [
+            'totalAmount' => $totalAmount,
+            'visas' => $visas
+        ];
 
         return $this->responseMessage(200, true, null, $data);
 
