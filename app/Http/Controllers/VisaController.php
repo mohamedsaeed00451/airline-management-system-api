@@ -7,6 +7,7 @@ use App\Http\Requests\GetVisaRequest;
 use App\Http\Requests\VisaRequest;
 use App\Http\Traits\GeneralTrait;
 use App\Models\Category;
+use App\Models\Company;
 use App\Models\PlatformDeposit;
 use App\Models\Visa;
 
@@ -23,9 +24,37 @@ class VisaController extends Controller
         if (!$category) {
             return $this->responseMessage(400, false, 'category not found');
         }
-        $visas = $category->visas()->with('fromCompany','toCompany')->paginate(PAGINATION_NUMBER);
 
-        return $this->responseMessage(200, true, null, $visas);
+        $visas = Visa::query()->where('category_id', $request->category_id)->where(function ($query) use ($request) {
+
+            if ($request->search) {
+                $companyIds = Company::query()->where('name', 'like', '%' . $request->search . '%')->pluck('id')->toArray();
+                $query->where(function ($query) use ($companyIds, $request) {
+                    $query->whereIn('from_company_id', $companyIds)->orWhereIn('to_company_id', $companyIds);
+                });
+            }
+
+            if ($request->start_date && $request->end_date) {
+                $query->whereBetween('created_at', [$request->start_date, $request->end_date]);
+            }
+
+            if ($request->is_deposit) {
+                $query->where('is_deposit', $request->is_deposit);
+            }
+
+            if ($request->is_transfer) {
+                $query->where('is_transfer', $request->is_transfer);
+            }
+
+        })->with('fromCompany', 'toCompany')->paginate(PAGINATION_NUMBER);
+
+
+        $data = [
+            'category' => $category,
+            'visas' => $visas
+        ];
+
+        return $this->responseMessage(200, true, null, $data);
     }
 
     /**

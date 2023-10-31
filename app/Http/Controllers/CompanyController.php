@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\AddCompanyRequest;
+use App\Http\Requests\GetCompaniesRequest;
 use App\Http\Requests\ReportRequest;
 use App\Http\Traits\GeneralTrait;
 use App\Models\Company;
@@ -16,9 +17,16 @@ class CompanyController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(GetCompaniesRequest $request)
     {
-        $companies = Company::query()->paginate(PAGINATION_NUMBER);
+        $query = Company::query();
+
+        if ($request->search) {
+            $query = $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        $companies = $query->orderByDesc('id')->paginate(PAGINATION_NUMBER);
+
         return $this->responseMessage(200, true, null, $companies);
     }
 

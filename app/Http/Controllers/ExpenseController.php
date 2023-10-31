@@ -15,7 +15,7 @@ class ExpenseController extends Controller
      */
     public function index()
     {
-        $expenses = Expense::query()->paginate(PAGINATION_NUMBER);
+        $expenses = Expense::query()->orderByDesc('id')->paginate(PAGINATION_NUMBER);
         return $this->responseMessage(200, true, null, $expenses);
     }
 

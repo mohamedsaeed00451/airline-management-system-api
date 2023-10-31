@@ -17,7 +17,7 @@ class EmployeeController extends Controller
      */
     public function index()
     {
-        $employees = Employee::query()->paginate(PAGINATION_NUMBER);
+        $employees = Employee::query()->orderByDesc('id')->paginate(PAGINATION_NUMBER);
 
         if (!$employees) {
             return $this->responseMessage(204, false, 'لا يوجد موظفين');
