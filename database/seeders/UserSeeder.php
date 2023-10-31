@@ -18,7 +18,7 @@ class UserSeeder extends Seeder
 
         User::query()->create([
             'name' => 'أوشــــن هـــارت',
-            'email' => 'admin@oceanheart.org',
+            'email' => 'admin@oceanheart.com',
             'email_verified_at' => now(),
             'password' => Hash::make(12345678)
         ]);
