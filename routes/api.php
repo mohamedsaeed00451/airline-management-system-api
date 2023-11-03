@@ -49,6 +49,9 @@ Route::middleware('jwt.verify')->group(function () {
     //*********************** Reports ***************************//
     Route::get('/reports/{id}', [CompanyController::class, 'reports']);
 
+    //*********************** Companies To List ***************************//
+    Route::get('/companies-list', [CompanyController::class, 'getCompaniesToList']);
+
     //*********************** Expenses ***************************//
     Route::apiResource('/expenses', ExpenseController::class);
 

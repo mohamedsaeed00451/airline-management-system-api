@@ -149,4 +149,10 @@ class CompanyController extends Controller
         return $this->responseMessage(200, true, null, $data);
 
     }
+
+    public function getCompaniesToList()
+    {
+        $companies = Company::query()->orderByDesc('id')->get();
+        return $this->responseMessage(200, true, null, $companies);
+    }
 }
