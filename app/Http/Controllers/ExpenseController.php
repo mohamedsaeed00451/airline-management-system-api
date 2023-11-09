@@ -16,7 +16,12 @@ class ExpenseController extends Controller
     public function index()
     {
         $expenses = Expense::query()->orderByDesc('id')->paginate(PAGINATION_NUMBER);
-        return $this->responseMessage(200, true, null, $expenses);
+        $total_expenses = Expense::query()->sum('price');
+        $data = [
+            'total_expenses' => $total_expenses,
+            'expenses' => $expenses
+        ];
+        return $this->responseMessage(200, true, null, $data);
     }
 
     /**

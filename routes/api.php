@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Route;
 | Prefix => api
 */
 
-define('PAGINATION_NUMBER', 10);
+define('PAGINATION_NUMBER', 50);
 
 //*********************** login ***************************//
 Route::post('/login', [AuthController::class, 'login']);
@@ -48,6 +48,9 @@ Route::middleware('jwt.verify')->group(function () {
 
     //*********************** Reports ***************************//
     Route::get('/reports/{id}', [CompanyController::class, 'reports']);
+
+    //*********************** Reports PDF ***************************//
+    Route::get('/reports-pdf',[CompanyController::class,'reportPDF']);
 
     //*********************** Companies To List ***************************//
     Route::get('/companies-list', [CompanyController::class, 'getCompaniesToList']);

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AddCompanyRequest;
 use App\Http\Requests\GetCompaniesRequest;
 use App\Http\Requests\ReportRequest;
+use App\Http\Requests\ReportsPDFRequest;
 use App\Http\Traits\GeneralTrait;
 use App\Models\Company;
 use App\Models\Visa;
@@ -102,11 +103,11 @@ class CompanyController extends Controller
             $selling_price = Visa::query()->where('from_company_id', $id)->orWhere('to_company_id', $id)->sum('selling_price');
             $execution_price = Visa::query()->where('from_company_id', $id)->orWhere('to_company_id', $id)->sum('execution_price');
         } elseif ($request->report_type == 'implement') {
-            $selling_price = Visa::query()->Where('from_company_id', $id)->sum('selling_price');
-            $execution_price = Visa::query()->Where('from_company_id', $id)->sum('execution_price');
+            $selling_price = Visa::query()->Where('to_company_id', $id)->sum('selling_price');
+            $execution_price = Visa::query()->Where('to_company_id', $id)->sum('execution_price');
         } elseif ($request->report_type == 'sale') {
-            $selling_price = Visa::query()->where('to_company_id', $id)->sum('selling_price');
-            $execution_price = Visa::query()->where('to_company_id', $id)->sum('execution_price');
+            $selling_price = Visa::query()->where('from_company_id', $id)->sum('selling_price');
+            $execution_price = Visa::query()->where('from_company_id', $id)->sum('execution_price');
         }
 
         $totalAmount = $selling_price - $execution_price;
@@ -117,9 +118,9 @@ class CompanyController extends Controller
                 if ($request->report_type == 'comprehensive') {
                     $query->where('from_company_id', $id)->orWhere('to_company_id', $id);
                 } elseif ($request->report_type == 'implement') {
-                    $query->Where('from_company_id', $id);
+                    $query->Where('to_company_id', $id);
                 } elseif ($request->report_type == 'sale') {
-                    $query->where('to_company_id', $id);
+                    $query->where('from_company_id', $id);
                 }
             });
 
@@ -154,5 +155,81 @@ class CompanyController extends Controller
     {
         $companies = Company::query()->orderByDesc('id')->get();
         return $this->responseMessage(200, true, null, $companies);
+    }
+
+    public function reportPDF(ReportsPDFRequest $request)
+    {
+        $type_report = $request->report_type;
+        if ($request->company_id) {
+            $company_name = Company::query()->find($request->company_id)->name;
+        } else {
+            $company_name = 'كل الشركات';
+        }
+
+        $visas = Visa::query()->where(function ($query) use ($request) {
+
+            if ($request->company_id) {
+                $query->where(function ($query) use ($request) {
+                    if ($request->report_type == 'comprehensive') {
+                        $query->where('from_company_id', $request->company_id)->orWhere('to_company_id', $request->company_id);
+                    } elseif ($request->report_type == 'implement') {
+                        $query->Where('to_company_id', $request->company_id);
+                    } elseif ($request->report_type == 'sale') {
+                        $query->where('from_company_id', $request->company_id);
+                    }
+                });
+            }
+
+            if ($request->category_id) {
+                $query->where('category_id', $request->category_id);
+            }
+
+            if ($request->start_date && $request->end_date) {
+                $query->whereBetween('created_at', [$request->start_date, $request->end_date]);
+            }
+
+            if ($request->is_deposit) {
+                $query->where('is_deposit', $request->is_deposit);
+            }
+
+            if ($request->is_transfer) {
+                $query->where('is_transfer', $request->is_transfer);
+            }
+
+        })->with('category', 'fromCompany', 'toCompany')->get();
+
+        $total_selling_price = $visas->sum('selling_price');
+        $total_execution_price = $visas->sum('execution_price');
+
+        $new_data = [];
+        foreach ($visas as $visa) {
+            $type = $visa->category->name;
+            unset($visa->category);
+            $new_data[$type][] = $visa;
+        }
+
+        $filal_data = [];
+        foreach ($new_data as $type => $datum) {
+            $filal_data[] = [
+                'type' => $type,
+                'data' => $datum
+            ];
+        }
+
+        $data = [
+            'filal_data' => $filal_data,
+            'type_report' => $type_report,
+            'company_name' => $company_name,
+            'total_execution_price' => $total_execution_price,
+            'total_selling_price' => $total_selling_price
+        ];
+
+        $mpdf = new \Mpdf\Mpdf();
+        $mpdf->autoScriptToLang = true;
+        $mpdf->autoLangToFont = true;
+        $html = view('report', $data)->render();
+        $mpdf->WriteHTML($html);
+
+        return $mpdf->Output('تقرير ' . $company_name . '.pdf', "D");
     }
 }

@@ -48,7 +48,6 @@ class VisaController extends Controller
 
         })->with('fromCompany', 'toCompany')->paginate(PAGINATION_NUMBER);
 
-
         $data = [
             'category' => $category,
             'visas' => $visas
@@ -190,8 +189,23 @@ class VisaController extends Controller
         try {
 
             $visa = Visa::query()->find($id);
+
             if (!$visa) {
                 return $this->responseMessage(400, false, 'visa not found');
+            }
+
+            $category = Category::query()->find($visa->category_id);
+
+            if (!$category) {
+                return $this->responseMessage(400, false, 'category not found');
+            }
+
+            if ($category->name == 'باركود شخصى') {
+
+                $platformDeposit = PlatformDeposit::query()->first();
+                $platformDeposit->amount += $visa->execution_price;
+                $platformDeposit->save();
+
             }
 
             $visa->delete();
