@@ -10,6 +10,7 @@ use App\Http\Traits\GeneralTrait;
 use App\Models\Company;
 use App\Models\Visa;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class CompanyController extends Controller
 {
@@ -241,6 +242,19 @@ class CompanyController extends Controller
         $html = view('report', $data)->render();
         $mpdf->WriteHTML($html);
 
-        return $mpdf->Output('تقرير ' . $report_name . ' ' . $company_name . '.pdf', "D");
+        if (Storage::exists('files')) {
+            Storage::deleteDirectory('files');
+        }
+
+        Storage::makeDirectory('files');
+
+        $filepath = public_path('files/' . 'تقرير ' . $report_name . ' ' . $company_name . '.pdf');
+
+        $mpdf->Output($filepath, "F");
+
+        $url = url('files/' . 'تقرير ' . $report_name . ' ' . $company_name . '.pdf');
+
+        return $this->responseMessage(200, true, null, ['url' => $url]);
+
     }
 }
