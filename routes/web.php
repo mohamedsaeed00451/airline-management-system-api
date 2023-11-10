@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CompanyController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,5 +14,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-
+//*********************** Reports PDF ***************************//
+Route::get('/reports-pdf',[CompanyController::class,'reportPDF']);
 

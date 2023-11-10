@@ -66,6 +66,14 @@
             <th><p><span> إجمالى سعر البيع</span>
                     : {{ $total_selling_price }}ج</p></th>
         </tr>
+        <tr>
+            <th><p><span> إجمالى المكسب الفعلى </span>
+                    : {{ $total_deposit - $total_transfer }}ج</p></th>
+            <th><p><span>تم التحويل </span>
+                    : {{ $total_transfer }}ج</p></th>
+            <th><p><span>تم الإيداع </span>
+                    : {{ $total_deposit }}ج</p></th>
+        </tr>
     </table>
 
     @forelse($filal_data as $filal)
@@ -135,6 +143,10 @@
 
     <table>
         <tr>
+            <th><p><span>متبقى </span>
+                    : {{ $total_execution_price - $total_transfer }}ج</p></th>
+            <th><p><span>تم تحويل </span>
+                    : {{ $total_transfer }}ج</p></th>
             <th><p><span> إجمالى سعر التنفيذ</span>
                     : {{ $total_execution_price }}ج</p></th>
         </tr>
@@ -191,6 +203,10 @@
 
     <table>
         <tr>
+            <th><p><span>متبقى </span>
+                    : {{ $total_selling_price - $total_deposit }}ج</p></th>
+            <th><p><span>تم الإيداع </span>
+                    : {{ $total_deposit }}ج</p></th>
             <th><p><span> إجمالى سعر البيع</span>
                     : {{ $total_selling_price }}ج</p></th>
         </tr>

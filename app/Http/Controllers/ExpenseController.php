@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ExpenseRequest;
+use App\Http\Requests\GetExpensesRequest;
 use App\Http\Traits\GeneralTrait;
 use App\Models\Expense;
 
@@ -13,15 +14,25 @@ class ExpenseController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(GetExpensesRequest $request)
     {
-        $expenses = Expense::query()->orderByDesc('id')->paginate(PAGINATION_NUMBER);
-        $total_expenses = Expense::query()->sum('price');
+        $query = Expense::query();
+
+        if ($request->start_date && $request->end_date) {
+            $query->whereBetween('created_at', [$request->start_date, $request->end_date]);
+        }
+
+        $expenses = $query->orderByDesc('id')->paginate(PAGINATION_NUMBER);
+
+        $total_expenses = $query->sum('price');
+
         $data = [
             'total_expenses' => $total_expenses,
             'expenses' => $expenses
         ];
+
         return $this->responseMessage(200, true, null, $data);
+
     }
 
     /**

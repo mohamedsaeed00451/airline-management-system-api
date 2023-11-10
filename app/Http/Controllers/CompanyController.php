@@ -160,6 +160,13 @@ class CompanyController extends Controller
     public function reportPDF(ReportsPDFRequest $request)
     {
         $type_report = $request->report_type;
+        if ($request->report_type == 'comprehensive') {
+            $report_name = 'شامل';
+        } elseif ($request->report_type == 'implement') {
+            $report_name = 'تنفيذ';
+        } elseif ($request->report_type == 'sale') {
+            $report_name = 'بيع';
+        }
         if ($request->company_id) {
             $company_name = Company::query()->find($request->company_id)->name;
         } else {
@@ -200,6 +207,8 @@ class CompanyController extends Controller
 
         $total_selling_price = $visas->sum('selling_price');
         $total_execution_price = $visas->sum('execution_price');
+        $total_deposit = $visas->where('is_deposit', true)->sum('selling_price');
+        $total_transfer = $visas->where('is_transfer', true)->sum('execution_price');
 
         $new_data = [];
         foreach ($visas as $visa) {
@@ -221,7 +230,9 @@ class CompanyController extends Controller
             'type_report' => $type_report,
             'company_name' => $company_name,
             'total_execution_price' => $total_execution_price,
-            'total_selling_price' => $total_selling_price
+            'total_selling_price' => $total_selling_price,
+            'total_deposit' => $total_deposit,
+            'total_transfer' => $total_transfer
         ];
 
         $mpdf = new \Mpdf\Mpdf();
@@ -230,6 +241,6 @@ class CompanyController extends Controller
         $html = view('report', $data)->render();
         $mpdf->WriteHTML($html);
 
-        return $mpdf->Output('تقرير ' . $company_name . '.pdf', "D");
+        return $mpdf->Output('تقرير ' . $report_name . ' ' . $company_name . '.pdf', "D");
     }
 }
