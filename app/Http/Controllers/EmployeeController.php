@@ -32,8 +32,10 @@ class EmployeeController extends Controller
             $commission = $employee->commissions()->whereMonth('created_at', date('m'))->first();
             if (!$commission) {
                 $employee->commission = 0;
+                $employee->commission_id = null;
             } else {
                 $employee->commission = $commission->commission;
+                $employee->commission_id = $commission->id;
             }
             $employee->total_salary = $employee->commission + $employee->salary;
         }
