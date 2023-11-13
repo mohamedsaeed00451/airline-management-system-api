@@ -33,6 +33,8 @@ class VisaRequest extends FormRequest
             'category_id' => 'bail|required|exists:categories,id',
             'from_company_id' => 'bail|required|exists:companies,id',
             'to_company_id' => 'bail|required|exists:companies,id',
+            'to_bank_id' => 'bail|nullable|exists:bank_accounts,id',
+            'from_bank_id' => 'bail|nullable|exists:bank_accounts,id',
             'is_deposit' => 'bail|required|in:0,1',
             'is_transfer' => 'bail|required|in:0,1',
             'notes' => 'bail|nullable|string',
@@ -48,6 +50,8 @@ class VisaRequest extends FormRequest
             'to_company_id' => 'bail|required|exists:companies,id',
             'is_deposit' => 'bail|required|in:0,1',
             'is_transfer' => 'bail|required|in:0,1',
+            'to_bank_id' => 'bail|nullable|exists:bank_accounts,id',
+            'from_bank_id' => 'bail|nullable|exists:bank_accounts,id',
             'notes' => 'bail|nullable|string',
         ];
     }

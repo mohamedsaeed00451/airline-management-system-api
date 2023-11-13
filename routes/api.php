@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BankAccountController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\EmployeeCommissionController;
@@ -43,6 +44,9 @@ Route::middleware('jwt.verify')->group(function () {
     //*********************** Add Platform Deposit ***************************//
     Route::post('/add-platform-deposit', [VisaController::class, 'depositToPlatform']);
 
+    //*********************** Update Platform Deposit ***************************//
+    Route::put('/update-platform-deposit', [VisaController::class, 'updatePlatformAmount']);
+
     //*********************** Companies ***************************//
     Route::apiResource('/companies', CompanyController::class);
 
@@ -63,5 +67,8 @@ Route::middleware('jwt.verify')->group(function () {
 
     //*********************** Employee Commission ***************************//
     Route::apiResource('/commissions', EmployeeCommissionController::class);
+
+    //*********************** Banks ***************************//
+    Route::apiResource('/banks', BankAccountController::class);
 
 });
