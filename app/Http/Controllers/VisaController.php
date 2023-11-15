@@ -417,6 +417,11 @@ class VisaController extends Controller
     public function getPlatformAmount()
     {
         $amount = PlatformDeposit::query()->first();
+        if (!$amount) {
+            $amount = [
+                'amount' => 0
+            ];
+        }
         return $this->responseMessage(200, true, null, $amount);
     }
 
