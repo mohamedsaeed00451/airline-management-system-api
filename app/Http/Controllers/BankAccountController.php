@@ -71,8 +71,13 @@ class BankAccountController extends Controller
 
         $transactions = $query->get();
 
+        $totalDeposit = $transactions->where('type','DEPOSIT')->sum('amount');
+        $totalTransfer = $transactions->where('type','TRANSFER')->sum('amount');
+
         $data = [
             'bank' => $bank,
+            'total_deposit' => $totalDeposit,
+            'total_transfer' => $totalTransfer,
             'transactions' => $transactions
         ];
 
